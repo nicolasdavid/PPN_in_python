@@ -28,13 +28,15 @@ net.fire(net.transitions[1])
 print(net.display_marking())
 
 print(net)
+net.export_to_dot()
 
 #test parametric
 print("ARCS: \n Is input of t1 param ? %s\n is output of t1 param ?%s" %(i1.is_parametric(),o1.is_parametric()))
 print("TRANSITION t1:\n Is t1 pre Param ? %s\nIs t1 Post Param ? %s\n Is t1 Param ? %s" %(net.transitions[0].isParametricPre(),net.transitions[0].isParametricPost(),net.transitions[0].is_parametric()))
 print("TRANSITION t3:\n Is t3 pre Param ? %s\nIs t3 Post Param ? %s\n Is t3 Param ? %s" %(net.transitions[2].isParametricPre(),net.transitions[2].isParametricPost(),net.transitions[2].is_parametric()))
 
-net.evaluate({ 1 : 5})
+net.evaluate({1: 5})
+
 
 i1.get_param_present(net.params)
 

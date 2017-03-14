@@ -1,6 +1,7 @@
 from src.vertex import *
 from src.ppl_wrapper import *
 import ppl
+import os
 
 class Net:
     """
@@ -99,3 +100,24 @@ class Net:
         #DO WITH OK()
         poly = ppl.NNC_Polyhedron(context)
         return not poly.is_empty()
+
+    def export_to_dot(self):
+        """
+        Generate a dot file description of the Petri Net.
+        """
+        name = "exported_net_%s" % (self.id)
+        file = open(name + ".dot", "w")
+        file.write("digraph {\n")
+        for t in self.transitions:
+            for arc in t.pre:
+                file.write("%s -> %s[label=\"%s\"]\n" % (arc.input.id, arc.output.id, str(arc.weight)))
+            for arc in t.post:
+                file.write("%s -> %s[label=\"%s\"]\n" % (arc.input.id, arc.output.id, str(arc.weight)))
+        for p in self.places:
+            file.write("%s[label=\"%s\"]\n" % (p.id, str(p.tokens)))
+        for t in self.transitions:
+            file.write("%s[shape=box,color=lightblue2,label=\"%s\"]\n" % (t.id, t.id))
+        file.write("}")
+        file.close()
+        command = "dot -Tpng %s.dot > %s.png" % (name, name)
+        os.system(command)
