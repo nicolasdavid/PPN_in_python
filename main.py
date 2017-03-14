@@ -45,3 +45,13 @@ print("is Pre ? %s" %(net.is_pre_parametric()))
 print("is Post ? %s" %(net.is_post_parametric()))
 print("is Distinct ? %s" %(net.is_distinct_parametric()))
 
+
+
+print("#### TEST XML IMPORT #####")
+fileName = "train1"
+if os.path.isfile("%s.xml" % fileName):
+    train = NetFromRomeoXML(fileName, 0)
+    train.fire(train.transitions[0])
+    train.export_to_dot()
+else:
+    print("Sorry, file %s.xml does not exists" % fileName)

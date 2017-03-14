@@ -1,7 +1,10 @@
 from src.vertex import *
 from src.ppl_wrapper import *
+from src.arc import *
+
 import ppl
 import os
+from lxml import etree
 
 class Net:
     """
@@ -121,3 +124,38 @@ class Net:
         file.close()
         command = "dot -Tpng %s.dot > %s.png" % (name, name)
         os.system(command)
+
+class NetFromRomeoXML(Net):
+    """
+    Class that describes a Parametric Petri Net constructed from a Romeo Model.
+    See :
+        http://romeo.rts-software.org/
+    """
+    def __init__(self, fileName, nbParamToAdd):
+        tree = etree.parse("%s.xml" % fileName)
+        nbPlaces = 0
+        nbTransitions = 0
+        for p in tree.xpath("/TPN/place"):
+            nbPlaces += 1
+        for t in tree.xpath("/TPN/transition"):
+            nbTransitions += 1
+        super().__init__(fileName,nbPlaces, nbTransitions, nbParamToAdd)
+        self.arcs = []
+        i = 0
+        o = 0
+        for arc in tree.xpath("/TPN/arc"):
+            if arc.get("type") == "TransitionPlace":
+                self.arcs.append(Arc("i%s" % i, ppl.Linear_Expression(int(arc.get("weight"))),
+                                self.transitions[int(arc.get("transition")) - 1],
+                                self.places[int(arc.get("place")) - 1]))
+                i += 1
+            elif arc.get("type") == "PlaceTransition":
+                self.arcs.append(Arc("o%s" % o, ppl.Linear_Expression(int(arc.get("weight"))),
+                                self.places[int(arc.get("place")) - 1],
+                                self.transitions[int(arc.get("transition")) - 1]))
+                o += 1
+            else:
+                print("Error")
+
+        for p in tree.xpath("/TPN/place"):
+            self.places[int(p.get("id")) - 1].addTokens(ppl.Linear_Expression(int(p.get("initialMarking"))))
