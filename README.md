@@ -7,4 +7,4 @@ Implement several notions based on the archetype of Parametric Petri Nets introd
 Requirements
 ------------
 
-- `PyPPL <https://github.com/videlec/pplpy>`
+- <a href="https://github.com/videlec/pplpy">PyPPL</a>
