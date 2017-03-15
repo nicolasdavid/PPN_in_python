@@ -1,0 +1,9 @@
+#PYCHARM FILES
+
+.idea/*
+
+#OUTPUT
+
+*.dot
+*.png
+
