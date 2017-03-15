@@ -3,6 +3,7 @@ from src.net import *
 from src.arc import *
 from src.ppl_wrapper import *
 import ppl
+from src.marking import *
 
 
 #Construction of a net from scratch
@@ -65,3 +66,23 @@ if os.path.isfile("xml/%s.xml" % fileName):
     train.export_to_dot()
 else:
     print("Sorry, file xml/%s.xml does not exists" % fileName)
+
+
+#Test Marking
+m1 = Marking(3)
+m1.set_omega([True, False, False])
+m1.set_value([1, 2, 3])
+
+m2 = Marking(3)
+m2.set_omega([False, False, False])
+m2.set_value([1, 2, 3])
+
+m3 = Marking(3)
+m3.set_omega([True, False, False])
+m3.set_value([1, 4, 2])
+
+print("markings:\nm1=%s\nm2=%s\nm3=%s" %(m1, m2, m3))
+print(m1 < m2)
+print(m2 < m1)
+print(m1 < m3)
+print(m3 < m1)
