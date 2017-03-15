@@ -49,15 +49,39 @@ class Net:
         ", ".join(map(str, self.params)), " && ".join(map(str, list(self.constraints))))
 
     def is_parametric(self):
+        """
+        Test if a net has at least one parametric arc i.e. if it is not a classic PN
+        return:
+            boolean
+        """
         return any(t.is_parametric() for t in self.transitions)
 
     def is_pre_parametric(self):
+        """
+        Test if a net has only parameters on input arc i.e. if it is a preT-PPN
+        return:
+            boolean
+        """
         return any(t.isParametricPre() for t in self.transitions) and all(not t.isParametricPost() for t in self.transitions)
 
     def is_post_parametric(self):
+        """
+        Test if a net has only parameters on output arc i.e. if it is a postT-PPN
+        return:
+            boolean
+        """
         return any(t.isParametricPost() for t in self.transitions) and all(not t.isParametricPre() for t in self.transitions)
 
     def is_distinct_parametric(self):
+        """
+        Test if a net has different parameters on input vs output arc i.e. if it is a distinctT-PPN.
+        Note that a preT-PPN or a postT-PPN is a particular distinctT-PPN.
+        To test if a net is strictly a distinctT-PPN and not a more precise subclass,
+        we should return :
+            return len(setPre & setPost) == 0 #and len(setPre) != 0 and len(setPost) != 0
+        return:
+            boolean
+        """
         setPre = set()
         setPost = set()
         for t in self.transitions :
@@ -65,15 +89,38 @@ class Net:
                 setPre.update(t.get_param_present_pre(self.params))
             if t.isParametricPost() :
                 setPost.update(t.get_param_present_post(self.params))
-        return len(setPre & setPost) == 0 and len(setPre) != 0 and len(setPost) != 0
+        return len(setPre & setPost) == 0 #and len(setPre) != 0 and len(setPost) != 0
+
+    def get_type_of_net(self):
+        """
+        Get the syntactical class of a PPN among :
+            T-PPN  <-- distinctT-PPN <-- {preT-PPN} OR  {postT-PPN <--(P-PPN)} <--  PN
+        Note that a parametric initial marking (P-PPN) can be easily translated into a postT-PPN.
+        We therefore do not test this subclass.
+        return:
+            string
+        """
+        if not self.is_parametric():
+            return "Petri Net"
+        elif self.is_pre_parametric():
+            return "preT-PPN"
+        elif self.is_post_parametric():
+            return "postT-PPN"
+        elif self.is_distinct_parametric():
+            return "distinctT-PPN"
+        else:
+            return "T-PPN"
 
     def marking(self):
+        """
+        return a dict describing the current marking of the net.
+        """
         tokens = {x: x.getTokens() for x in self.places}
         return tokens
 
     def display_marking(self):
         """
-        Return the current marking of the net.
+        return a string describing the current marking of the net.
         """
         l = map(lambda x: x.getTokens(), self.places)
         return ",".join(map(str, l))
