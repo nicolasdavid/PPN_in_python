@@ -1,3 +1,7 @@
+#PYTHON FILES
+
+src/__pycache__/
+
 #PYCHARM FILES
 
 .idea/*

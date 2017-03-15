@@ -49,9 +49,9 @@ print("is Distinct ? %s" %(net.is_distinct_parametric()))
 
 print("#### TEST XML IMPORT #####")
 fileName = "train1"
-if os.path.isfile("%s.xml" % fileName):
+if os.path.isfile("xml/%s.xml" % fileName):
     train = NetFromRomeoXML(fileName, 0)
     train.fire(train.transitions[0])
     train.export_to_dot()
 else:
-    print("Sorry, file %s.xml does not exists" % fileName)
+    print("Sorry, file xml/%s.xml does not exists" % fileName)

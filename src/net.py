@@ -109,7 +109,7 @@ class Net:
         Generate a dot file description of the Petri Net.
         """
         name = "exported_net_%s" % (self.id)
-        file = open(name + ".dot", "w")
+        file = open( "export/" + name + ".dot", "w")
         file.write("digraph {\n")
         for t in self.transitions:
             for arc in t.pre:
@@ -122,7 +122,7 @@ class Net:
             file.write("%s[shape=box,color=lightblue2,label=\"%s\"]\n" % (t.id, t.id))
         file.write("}")
         file.close()
-        command = "dot -Tpng %s.dot > %s.png" % (name, name)
+        command = "dot -Tpng export/%s.dot > export/%s.png" % (name, name)
         os.system(command)
 
 class NetFromRomeoXML(Net):
@@ -132,7 +132,7 @@ class NetFromRomeoXML(Net):
         http://romeo.rts-software.org/
     """
     def __init__(self, fileName, nbParamToAdd):
-        tree = etree.parse("%s.xml" % fileName)
+        tree = etree.parse("xml/%s.xml" % fileName)
         nbPlaces = 0
         nbTransitions = 0
         for p in tree.xpath("/TPN/place"):
