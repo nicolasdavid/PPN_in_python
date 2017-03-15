@@ -1,6 +1,7 @@
 from src.vertex import *
 from src.ppl_wrapper import *
 from src.arc import *
+from src.marking import *
 
 import ppl
 import os
@@ -171,6 +172,20 @@ class Net:
         file.close()
         command = "dot -Tpng export/%s.dot > export/%s.png" % (name, name)
         os.system(command)
+
+    def formal_marking(self):
+        #TODO : warning for comparisons...
+        # for the moment only integer marking...
+        # otherwise only takes the inhomogeneous part of the linear expr
+        m = Marking(len(self.places))
+        m.set_value([p.getTokens() for p in self.places])
+        return m
+
+    def get_pre_matrix(self):
+        return [[t.get_coeff_pre(p) for p in self.places] for t in self.transitions]
+
+    def get_post_matrix(self):
+        return [[t.get_coeff_post(p) for p in self.places] for t in self.transitions]
 
 class NetFromRomeoXML(Net):
     """

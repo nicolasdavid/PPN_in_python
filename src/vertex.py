@@ -87,3 +87,15 @@ class Transition(Vertex):
         for arc in self.getPost():
             s.update(arc.get_param_present(params))
         return s
+
+    def get_coeff_pre(self, place):
+        for arc in self.pre:
+            if arc.input == place:
+                return arc.weight
+        return 0
+
+    def get_coeff_post(self, place):
+        for arc in self.post:
+            if arc.output == place:
+                return arc.weight
+        return 0

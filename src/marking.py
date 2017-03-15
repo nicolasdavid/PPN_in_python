@@ -32,3 +32,20 @@ class Marking:
 
     def __le__(self, other):
         return self == other or self < other
+
+    def __sub__(self, other):
+        """
+        Warning : add a marking and a list of value
+        Param :
+            other is a list of value
+        Return :
+            a new marking
+        """
+        l = len(self.value)
+        m = Marking(l)
+        m.set_value([self.value[i]-other[i] for i in range(l)])
+        m.set_omega(self.omega)
+        return m
+
+   # def __add__(self, other):
+

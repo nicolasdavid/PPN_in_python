@@ -46,6 +46,7 @@ print("TRANSITION t3:\n Is t3 pre Param ? %s\nIs t3 Post Param ? %s\n Is t3 Para
 
 #Test evaluation of a net
 net.evaluate({1: 5})
+net.export_to_dot()
 
 #Test get params of an arc
 i1.get_param_present(net.params)
@@ -86,3 +87,13 @@ print(m1 < m2)
 print(m2 < m1)
 print(m1 < m3)
 print(m3 < m1)
+
+m = net.formal_marking()
+print(m)
+Pre = net.get_pre_matrix()
+Post = net.get_post_matrix()
+print("Pre: %s" % Pre)
+print("Post: %s" % Post)
+
+u = m - Pre[1]
+print(u)
