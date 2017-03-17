@@ -35,22 +35,19 @@ class IntegerExtended:
             return False
 
     def __le__(self, other):
-        if self.infinite and not other.infinite:
-            return False
-        elif other.infinite and not self.infinite:
-            return True
-        elif self.infinite and other.infinite:
+        if (other.finite):
             return True
         else:
-            return self.value <= other.value
+            if (self.infinite):
+                return False
+            else:
+                return self.value <= other.value
 
     def __lt__(self, other):
-        if self.infinite and not other.infinite:
+        if self.infinite:
             return False
         elif other.infinite and not self.infinite:
             return True
-        elif self.infinite and other.infinite:
-            return False
         else:
             return self.value < other.value
 

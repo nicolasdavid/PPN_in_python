@@ -89,4 +89,8 @@ t2 = numpy.array([a,e])
 t3 = t1+t2
 print(t1 < t2)
 
+u = IntegerExtended(value=ppl.Linear_Expression(1), infinite=False)
+v = IntegerExtended(value=ppl.Linear_Expression(3), infinite=True)
+print(u < v)
+
 
