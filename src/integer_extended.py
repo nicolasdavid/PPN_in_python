@@ -22,9 +22,23 @@ class IntegerExtended:
         except ValueError:
                 print("The substraction cannot be done. (the second member may be equal to %s)" %u"\u03C9")
         else:
-            infinite = self.infinite or other.infinite
+            infinite = self.infinite
             value = self.value - other.value
             return IntegerExtended(value=value, infinite=infinite)
+
+    def __mul__(self, other):
+        try:
+            if(self.infinite or other.infinite):
+                raise ValueError("one element is equal to %s" %u"\u03C9")
+            a = int(self.value)
+            b = int(other.value)
+        except ValueError:
+            print("The multiplication cannot be done. (one member may be equal to %s)" %u"\u03C9")
+        except TypeError:
+            print("One variable has a type uncompatable with multiplication")
+        else:
+            value = self.value * other.value
+            return IntegerExtended(value=value)
 
     def __eq__(self, other):
         if self.infinite and other.infinite:

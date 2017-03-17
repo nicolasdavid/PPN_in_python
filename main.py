@@ -79,6 +79,8 @@ d = IntegerExtended(value=1, infinite=True)
 print(d)
 e = IntegerExtended(infinite=True)
 print(e)
+print(a*b)
+print(a*e)
 
 print(b+e)
 print(b-e)
@@ -91,6 +93,7 @@ print(t1 < t2)
 
 u = IntegerExtended(value=ppl.Linear_Expression(1), infinite=False)
 v = IntegerExtended(value=ppl.Linear_Expression(3), infinite=True)
-print(u < v)
+print(u * u)
+
 
 
