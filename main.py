@@ -2,6 +2,7 @@
 from src.net import *
 from src.arc import *
 from src.ppl_wrapper import *
+from src.integer_extended import *
 import ppl
 
 
@@ -65,3 +66,22 @@ if os.path.isfile("xml/%s.xml" % fileName):
     train.export_to_dot()
 else:
     print("Sorry, file xml/%s.xml does not exists" % fileName)
+
+#Test Integer Extended
+a = IntegerExtended()
+print(a)
+b = IntegerExtended(10)
+print(b)
+c = IntegerExtended(value=11)
+print(c)
+d = IntegerExtended(value=1, infinite=True)
+print(d)
+e = IntegerExtended(infinite=True)
+print(e)
+
+print(b+e)
+print(b-e)
+print(e-b)
+
+
+
