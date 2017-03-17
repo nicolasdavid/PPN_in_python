@@ -1,6 +1,15 @@
+import ppl
+
 class IntegerExtended:
+    """
+    faire 2 class : une étendant les entiers, une étendat les linear expressions
+    Extend Linear Expression with omega.
+    TODO :
+        RETURN CONSTRAINT, NOT BOOLEAN
+    """
 
     def __init__(self, value=0, infinite=False):
+        assert(type(value) == int), "Not an integer"
         self.value = value
         self.infinite = infinite
 
@@ -35,7 +44,7 @@ class IntegerExtended:
         except ValueError:
             print("The multiplication cannot be done. (one member may be equal to %s)" %u"\u03C9")
         except TypeError:
-            print("One variable has a type uncompatable with multiplication")
+            print("One variable has a type uncompatible with multiplication")
         else:
             value = self.value * other.value
             return IntegerExtended(value=value)
@@ -49,7 +58,7 @@ class IntegerExtended:
             return False
 
     def __le__(self, other):
-        if (other.finite):
+        if (other.infinite):
             return True
         else:
             if (self.infinite):

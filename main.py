@@ -5,6 +5,7 @@ from src.ppl_wrapper import *
 from src.integer_extended import *
 import ppl
 import numpy
+import networkx as nx
 
 
 #Construction of a net from scratch
@@ -91,9 +92,9 @@ t2 = numpy.array([a,e])
 t3 = t1+t2
 print(t1 < t2)
 
-u = IntegerExtended(value=ppl.Linear_Expression(1), infinite=False)
-v = IntegerExtended(value=ppl.Linear_Expression(3), infinite=True)
-print(u * u)
-
-
+u = LinearExpressionExtended(value=ppl.Linear_Expression(1), infinite=False)
+v = LinearExpressionExtended(value=ppl.Linear_Expression(3), infinite=True)
+print(u <= v)
+print(v <= u)
+print(v*2)
 
