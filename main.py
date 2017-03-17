@@ -4,6 +4,7 @@ from src.arc import *
 from src.ppl_wrapper import *
 from src.integer_extended import *
 import ppl
+import numpy
 
 
 #Construction of a net from scratch
@@ -83,5 +84,9 @@ print(b+e)
 print(b-e)
 print(e-b)
 
+t1 = numpy.array([a,b])
+t2 = numpy.array([a,e])
+t3 = t1+t2
+print(t1 < t2)
 
 

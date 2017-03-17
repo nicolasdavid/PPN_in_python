@@ -37,7 +37,7 @@ class IntegerExtended:
     def __le__(self, other):
         if self.infinite and not other.infinite:
             return False
-        elif other.finite and not self.infinite:
+        elif other.infinite and not self.infinite:
             return True
         elif self.infinite and other.infinite:
             return True
@@ -47,7 +47,7 @@ class IntegerExtended:
     def __lt__(self, other):
         if self.infinite and not other.infinite:
             return False
-        elif other.finite and not self.infinite:
+        elif other.infinite and not self.infinite:
             return True
         elif self.infinite and other.infinite:
             return False
