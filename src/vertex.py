@@ -11,19 +11,19 @@ class Vertex:
         self.post = []
         self.pre = []
 
-    def getId(self):
+    def get_id(self):
         return self.id
 
-    def getPre(self):
+    def get_pre(self):
         return self.pre
 
-    def getPost(self):
+    def get_post(self):
         return self.post
 
-    def addPre(self, arc):
+    def add_pre(self, arc):
         self.pre.append(arc)
 
-    def addPost(self, arc):
+    def add_post(self, arc):
         self.post.append(arc)
 
     def __str__(self):
@@ -35,34 +35,34 @@ class Place(Vertex):
         Vertex.__init__(self, id)
         self.tokens = tokens
 
-    def getTokens(self):
+    def get_tokens(self):
         return self.tokens
 
-    def setTokens(self, amount):
+    def set_tokens(self, amount):
         self.tokens = amount
 
-    def addTokens(self, amount):
+    def add_tokens(self, amount):
         self.tokens += amount
 
-    def consumeTokens(self, amount):
+    def consume_tokens(self, amount):
         self.tokens -= amount
 
-    def isTransition(self):
+    def is_transition(self):
         return False
 
 
 class Transition(Vertex):
-    def isTransition(self):
+    def is_transition(self):
         return True
 
-    def isParametricPre(self):
+    def is_parametric_pre(self):
         return any(arc.is_parametric() for arc in self.pre)
 
-    def isParametricPost(self):
+    def is_parametric_post(self):
         return any(arc.is_parametric() for arc in self.post)
 
     def is_parametric(self):
-        return self.isParametricPre() or self.isParametricPost()
+        return self.is_parametric_pre() or self.is_parametric_post()
 
     def fire(self):
         for arc in self.pre:
@@ -70,7 +70,7 @@ class Transition(Vertex):
         for arc in self.post:
             arc.generate()
 
-    def getFiringConstraint(self):
+    def get_firing_constraint(self):
         cs = ppl.Constraint_System()
         for arc in self.pre:
             cs.insert(arc.get_firing_constraint())
@@ -78,12 +78,12 @@ class Transition(Vertex):
 
     def get_param_present_pre(self, params):
         s = set()
-        for arc in self.getPre():
+        for arc in self.get_pre():
             s.update(arc.get_param_present(params))
         return s
 
     def get_param_present_post(self, params):
         s = set()
-        for arc in self.getPost():
+        for arc in self.get_post():
             s.update(arc.get_param_present(params))
         return s

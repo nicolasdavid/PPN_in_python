@@ -32,12 +32,12 @@ class Net:
             if not(value == "unassigned"):
                 val_comb[i] = ppl.Linear_Expression(value - self.params[i])
         for t in self.transitions:
-                for arc in t.getPre() :
+                for arc in t.get_pre() :
                     if(arc.is_parametric()):
                         coeff = [arc.weight.coefficient(self.params[i]) for i in range(len(self.params))]
                         for i in range(len(self.params)) :
                             arc.weight = arc.weight +coeff[i]*val_comb[i]
-                for arc in t.getPost() :
+                for arc in t.get_post() :
                     if (arc.is_parametric()):
                         coeff = [arc.weight.coefficient(self.params[i]) for i in range(len(self.params))]
                         for i in range(len(self.params)) :
@@ -62,7 +62,7 @@ class Net:
         return:
             boolean
         """
-        return any(t.isParametricPre() for t in self.transitions) and all(not t.isParametricPost() for t in self.transitions)
+        return any(t.is_parametric_pre() for t in self.transitions) and all(not t.is_parametric_post() for t in self.transitions)
 
     def is_post_parametric(self):
         """
@@ -70,7 +70,7 @@ class Net:
         return:
             boolean
         """
-        return any(t.isParametricPost() for t in self.transitions) and all(not t.isParametricPre() for t in self.transitions)
+        return any(t.is_parametric_post() for t in self.transitions) and all(not t.is_parametric_pre() for t in self.transitions)
 
     def is_distinct_parametric(self):
         """
@@ -85,9 +85,9 @@ class Net:
         setPre = set()
         setPost = set()
         for t in self.transitions :
-            if t.isParametricPre() :
+            if t.is_parametric_pre() :
                 setPre.update(t.get_param_present_pre(self.params))
-            if t.isParametricPost() :
+            if t.is_parametric_post() :
                 setPost.update(t.get_param_present_post(self.params))
         return len(setPre & setPost) == 0 #and len(setPre) != 0 and len(setPost) != 0
 
@@ -115,14 +115,14 @@ class Net:
         """
         return a dict describing the current marking of the net.
         """
-        tokens = {x: x.getTokens() for x in self.places}
+        tokens = {x: x.get_tokens() for x in self.places}
         return tokens
 
     def display_marking(self):
         """
         return a string describing the current marking of the net.
         """
-        l = map(lambda x: x.getTokens(), self.places)
+        l = map(lambda x: x.get_tokens(), self.places)
         return ",".join(map(str, l))
 
     def update_constraint_system(self):
@@ -130,7 +130,7 @@ class Net:
         Update the constraint system of the net by imposing that the current marking must be positive.
         """
         for p in self.places:
-            self.constraints.insert(p.getTokens() >= 0)
+            self.constraints.insert(p.get_tokens() >= 0)
 
     def fire(self, t):
         """
@@ -145,7 +145,7 @@ class Net:
         Ask whether a transition can be fired or not.
         """
         context = self.constraints
-        for c in list(t.getFiringConstraint()):
+        for c in list(t.get_firing_constraint()):
             context.insert(c)
         #DO WITH OK()
         poly = ppl.NNC_Polyhedron(context)
@@ -205,4 +205,4 @@ class NetFromRomeoXML(Net):
                 print("Error")
 
         for p in tree.xpath("/TPN/place"):
-            self.places[int(p.get("id")) - 1].addTokens(ppl.Linear_Expression(int(p.get("initialMarking"))))
+            self.places[int(p.get("id")) - 1].add_tokens(ppl.Linear_Expression(int(p.get("initialMarking"))))

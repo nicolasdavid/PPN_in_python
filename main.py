@@ -22,15 +22,15 @@ print("net with arcs:\n%s" % net) #TODO ADD THE ARCS ?
 
 #Test of str methods for several classes
 print("\n##### DISPLAY METHODS #########")
-print(net.places[0].getTokens())
+print(net.places[0].get_tokens())
 print(o2)
-print("\n".join(map(str,net.transitions[1].getPre())))
-print("\n".join(map(str,net.transitions[1].getPost())))
+print("\n".join(map(str, net.transitions[1].get_pre())))
+print("\n".join(map(str, net.transitions[1].get_post())))
 
 #Test of the semantics
 print("\n##### SEMANTICS #########")
 print(net.display_marking())
-net.places[0].addTokens(ppl.Linear_Expression(10))
+net.places[0].add_tokens(ppl.Linear_Expression(10))
 print(net.display_marking())
 net.fire(net.transitions[0])
 print(net.display_marking())
@@ -43,8 +43,8 @@ net.export_to_dot()
 #test is_parametric methods
 print("\n##### TEST PRESENCE OF PARAMETERS #########")
 print("ARCS: \n Is input of t1 param ? %s\n is output of t1 param ?%s" %(i1.is_parametric(),o1.is_parametric()))
-print("TRANSITION t1:\n Is t1 pre Param ? %s\nIs t1 Post Param ? %s\n Is t1 Param ? %s" %(net.transitions[0].isParametricPre(),net.transitions[0].isParametricPost(),net.transitions[0].is_parametric()))
-print("TRANSITION t3:\n Is t3 pre Param ? %s\nIs t3 Post Param ? %s\n Is t3 Param ? %s" %(net.transitions[2].isParametricPre(),net.transitions[2].isParametricPost(),net.transitions[2].is_parametric()))
+print("TRANSITION t1:\n Is t1 pre Param ? %s\nIs t1 Post Param ? %s\n Is t1 Param ? %s" % (net.transitions[0].is_parametric_pre(), net.transitions[0].is_parametric_post(), net.transitions[0].is_parametric()))
+print("TRANSITION t3:\n Is t3 pre Param ? %s\nIs t3 Post Param ? %s\n Is t3 Param ? %s" % (net.transitions[2].is_parametric_pre(), net.transitions[2].is_parametric_post(), net.transitions[2].is_parametric()))
 
 #Test evaluation of a net
 net.evaluate({1: 5})
