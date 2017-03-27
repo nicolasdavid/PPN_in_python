@@ -26,8 +26,8 @@ class LinearExpressionExtended:
         To be consistent, each comparison operator returns a ppl.Constraint
     """
 
-    def __init__(self, value=ppl.Linear_Expression(0), infinite=False):
-        self.value = value
+    def __init__(self, value=0, infinite=False):
+        self.value = ppl.Linear_Expression(value)
         self.infinite = infinite
 
     def __str__(self):

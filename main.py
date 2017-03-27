@@ -12,12 +12,12 @@ import networkx as nx
 net = Net("0",3,3,2)
 print("##### INTIAL TESTS #######")
 print("net without arcs:\n%s" % net)
-i1 = Arc("i1",ppl.Linear_Expression(net.params[0] + net.params[1] -2),net.places[0],net.transitions[0])
-o1 = Arc("o1",ppl.Linear_Expression(1),net.transitions[0],net.places[1])
-i2 = Arc("i2",ppl.Linear_Expression(1),net.places[1],net.transitions[1])
-o2 = Arc("o2",ppl.Linear_Expression(net.params[1]),net.transitions[1],net.places[2])
-i3 = Arc("i3",ppl.Linear_Expression(1),net.places[2],net.transitions[2])
-o3 = Arc("o3",ppl.Linear_Expression(1),net.transitions[2],net.places[1])
+i1 = Arc("i1",LinearExpressionExtended(net.params[0] + net.params[1] -2),net.places[0],net.transitions[0])
+o1 = Arc("o1",LinearExpressionExtended(1),net.transitions[0],net.places[1])
+i2 = Arc("i2",LinearExpressionExtended(1),net.places[1],net.transitions[1])
+o2 = Arc("o2",LinearExpressionExtended(net.params[1]),net.transitions[1],net.places[2])
+i3 = Arc("i3",LinearExpressionExtended(1),net.places[2],net.transitions[2])
+o3 = Arc("o3",LinearExpressionExtended(1),net.transitions[2],net.places[1])
 print("net with arcs:\n%s" % net) #TODO ADD THE ARCS ?
 
 #Test of str methods for several classes
@@ -30,11 +30,11 @@ print("\n".join(map(str, net.transitions[1].get_post())))
 #Test of the semantics
 print("\n##### SEMANTICS #########")
 print(net.display_marking())
-net.places[0].add_tokens(ppl.Linear_Expression(10))
+net.places[0].add_tokens(LinearExpressionExtended(10))
 print(net.display_marking())
 net.fire(net.transitions[0])
 print(net.display_marking())
-net.fire(net.transitions[1])
+#net.fire(net.transitions[1])
 print(net.display_marking())
 
 #Test of the export method, note that the marking is updated in the exported file
@@ -64,10 +64,16 @@ print("\n#### TEST XML IMPORT #####")
 fileName = "train1"
 if os.path.isfile("xml/%s.xml" % fileName):
     train = NetFromRomeoXML(fileName, 0)
-    train.fire(train.transitions[0])
+   # train.fire(train.transitions[0])
     train.export_to_dot()
 else:
     print("Sorry, file xml/%s.xml does not exists" % fileName)
+
+#Test marking
+
+m0 = net.marking()
+print("marking %s" %str(m0))
+
 
 #Test Integer Extended
 a = IntegerExtended()

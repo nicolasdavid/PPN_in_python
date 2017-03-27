@@ -34,14 +34,14 @@ class Net:
         for t in self.transitions:
                 for arc in t.get_pre() :
                     if(arc.is_parametric()):
-                        coeff = [arc.weight.coefficient(self.params[i]) for i in range(len(self.params))]
-                        for i in range(len(self.params)) :
-                            arc.weight = arc.weight +coeff[i]*val_comb[i]
+                        coeff = [arc.weight.value.coefficient(self.params[i]) for i in range(len(self.params))]
+                        for i in range(len(self.params)):
+                            arc.weight.value = arc.weight.value + coeff[i]*val_comb[i]
                 for arc in t.get_post() :
                     if (arc.is_parametric()):
-                        coeff = [arc.weight.coefficient(self.params[i]) for i in range(len(self.params))]
-                        for i in range(len(self.params)) :
-                            arc.weight = arc.weight +coeff[i]*val_comb[i]
+                        coeff = [arc.weight.value.coefficient(self.params[i]) for i in range(len(self.params))]
+                        for i in range(len(self.params)):
+                            arc.weight.value = arc.weight.value + coeff[i]*val_comb[i]
 
     def __str__(self):
         return "PPN %s:\n list of places: %s\n list of transitions: %s\n list of parameters: %s\n list of constraints: %s\n" % (
@@ -113,9 +113,9 @@ class Net:
 
     def marking(self):
         """
-        return a dict describing the current marking of the net.
+        return a list describing the current marking of the net.
         """
-        tokens = {x: x.get_tokens() for x in self.places}
+        tokens = [x.get_tokens() for x in self.places]
         return tokens
 
     def display_marking(self):
@@ -130,7 +130,7 @@ class Net:
         Update the constraint system of the net by imposing that the current marking must be positive.
         """
         for p in self.places:
-            self.constraints.insert(p.get_tokens() >= 0)
+            self.constraints.insert(p.get_tokens() >= LinearExpressionExtended(0))
 
     def fire(self, t):
         """
@@ -192,12 +192,12 @@ class NetFromRomeoXML(Net):
         o = 0
         for arc in tree.xpath("/TPN/arc"):
             if arc.get("type") == "TransitionPlace":
-                self.arcs.append(Arc("i%s" % i, ppl.Linear_Expression(int(arc.get("weight"))),
+                self.arcs.append(Arc("i%s" % i, LinearExpressionExtended(int(arc.get("weight"))),
                                 self.transitions[int(arc.get("transition")) - 1],
                                 self.places[int(arc.get("place")) - 1]))
                 i += 1
             elif arc.get("type") == "PlaceTransition":
-                self.arcs.append(Arc("o%s" % o, ppl.Linear_Expression(int(arc.get("weight"))),
+                self.arcs.append(Arc("o%s" % o, LinearExpressionExtended(int(arc.get("weight"))),
                                 self.places[int(arc.get("place")) - 1],
                                 self.transitions[int(arc.get("transition")) - 1]))
                 o += 1
@@ -205,4 +205,4 @@ class NetFromRomeoXML(Net):
                 print("Error")
 
         for p in tree.xpath("/TPN/place"):
-            self.places[int(p.get("id")) - 1].add_tokens(ppl.Linear_Expression(int(p.get("initialMarking"))))
+            self.places[int(p.get("id")) - 1].add_tokens(LinearExpressionExtended(int(p.get("initialMarking"))))

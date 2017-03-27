@@ -1,4 +1,5 @@
 import ppl
+from src.ppl_wrapper import *
 
 
 class Vertex:
@@ -31,7 +32,7 @@ class Vertex:
 
 
 class Place(Vertex):
-    def __init__(self, id, tokens=ppl.Linear_Expression(0)):
+    def __init__(self, id, tokens=LinearExpressionExtended(0)):
         Vertex.__init__(self, id)
         self.tokens = tokens
 
@@ -42,10 +43,10 @@ class Place(Vertex):
         self.tokens = amount
 
     def add_tokens(self, amount):
-        self.tokens += amount
+        self.tokens = self.tokens + amount
 
     def consume_tokens(self, amount):
-        self.tokens -= amount
+        self.tokens = self.tokens - amount
 
     def is_transition(self):
         return False

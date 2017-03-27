@@ -1,3 +1,5 @@
+from src.ppl_wrapper import *
+
 class Arc:
     def __init__(self, id, weight, input, output):
         assert (input.is_transition() != output.is_transition()), "Error: same input and output class"
@@ -31,11 +33,11 @@ class Arc:
         return self.input.get_tokens() >= self.weight
 
     def is_parametric(self):
-        return not self.weight.all_homogeneous_terms_are_zero()
+        return not self.weight.value.all_homogeneous_terms_are_zero()
 
     def get_param_present(self, params):
         s = set()
         for p in params:
-            if self.weight.coefficient(p) != 0:
+            if self.weight.value.coefficient(p) != 0:
                 s.add(p)
         return s
