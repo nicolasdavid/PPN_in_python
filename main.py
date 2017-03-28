@@ -121,4 +121,4 @@ print(v <= u)
 print(v*2)
 
 #TREES
-
+net.execute()

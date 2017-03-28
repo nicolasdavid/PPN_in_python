@@ -193,6 +193,26 @@ class Net:
     def get_enabled_transitions(self):
         return [t for t in self.transitions if self.is_enabled(t)]
 
+    def execute(self):
+        """
+        User interactive execution of the net. 
+        Warning : the initial marking is lost during the execution.
+        """
+        m = self.marking()
+        enabled = self.get_enabled_transitions()
+        exec = True
+        while(exec and len(enabled)>0):
+            print("chose a transition among %s" %enabled)
+            i = int(input("Fire t_i with i = ? (integer)..."))
+            past = m
+            self.fire(self.transitions[i])
+            m = self.marking()
+            print("%s -- t%s --> %s" %(str(past), str(i), str(m)))
+            answer = input("Continue ? (y/n)")
+            if answer.upper()[0] == "N":
+                exec = False
+
+
 class NetFromRomeoXML(Net):
     """
     Class that describes a Parametric Petri Net constructed from a Romeo Model.
