@@ -186,10 +186,6 @@ class Net:
     def compute_post_matrix(self):
         return [[t.get_post_vector(p) for p in self.places] for t in self.transitions]
 
-    def build_KM_tree(self):
-        assert not self.is_parametric()
-        return False
-
     def get_enabled_transitions(self):
         return [t for t in self.transitions if self.is_enabled(t)]
 

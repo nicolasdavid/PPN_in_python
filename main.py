@@ -120,5 +120,5 @@ print(u <= v)
 print(v <= u)
 print(v*2)
 
-#TREES
+#Dynamic Execution
 net.execute()
