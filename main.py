@@ -89,3 +89,26 @@ print("Post : %s" %str(net.compute_post_matrix()))
 #Dynamic Execution
 print("\n#### TEST EXECUTION #####")
 net.execute()
+
+try:
+    import pygraphviz
+    from networkx.drawing.nx_agraph import write_dot
+    print("using package pygraphviz")
+except ImportError:
+    try:
+        import pydotplus
+        from networkx.drawing.nx_pydot import write_dot
+        print("using package pydotplus")
+    except ImportError:
+        print()
+        print("Both pygraphviz and pydotplus were not found ")
+        print("see http://networkx.github.io/documentation"
+              "/latest/reference/drawing.html for info")
+        print()
+        raise
+
+G=nx.grid_2d_graph(5,5)  # 5x5 grid
+write_dot(G,"grid.dot")
+print("Now run: neato -Tps grid.dot >grid.ps")
+
+
