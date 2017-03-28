@@ -1,6 +1,6 @@
 from src.vertex import *
-from src.ppl_wrapper import *
 from src.arc import *
+from src.ppl_wrapper import *
 
 import ppl
 import os
@@ -137,13 +137,15 @@ class Net:
         Update the constraint system of the net by imposing that the current marking must be positive.
         """
         for p in self.places:
-            self.constraints.insert(p.get_tokens() >= LinearExpressionExtended(0))
+            self.constraints.insert(p.tokens >= LinearExpressionExtended(0))
 
     def fire(self, t):
         """
         Fire a transition in the net and update the tokens of the place of the net.
         """
         assert self.is_enabled(t)
+        for c in list(t.get_firing_constraint()):
+            self.constraints.insert(c)
         t.fire()
         self.update_constraint_system()
 
@@ -151,10 +153,9 @@ class Net:
         """
         Ask whether a transition can be fired or not.
         """
-        context = self.constraints
+        context = ppl.Constraint_System(self.constraints)
         for c in list(t.get_firing_constraint()):
             context.insert(c)
-        #DO WITH OK()
         poly = ppl.NNC_Polyhedron(context)
         return not poly.is_empty()
 
@@ -184,6 +185,13 @@ class Net:
 
     def compute_post_matrix(self):
         return [[t.get_post_vector(p) for p in self.places] for t in self.transitions]
+
+    def build_KM_tree(self):
+        assert not self.is_parametric()
+        return False
+
+    def get_enabled_transitions(self):
+        return [t for t in self.transitions if self.is_enabled(t)]
 
 class NetFromRomeoXML(Net):
     """
@@ -219,3 +227,4 @@ class NetFromRomeoXML(Net):
 
         for p in tree.xpath("/TPN/place"):
             self.places[int(p.get("id")) - 1].add_tokens(LinearExpressionExtended(int(p.get("initialMarking"))))
+

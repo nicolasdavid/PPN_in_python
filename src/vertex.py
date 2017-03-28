@@ -30,6 +30,8 @@ class Vertex:
     def __str__(self):
         return str(self.id)
 
+    def __repr__(self):
+        return str(self)
 
 class Place(Vertex):
     def __init__(self, id, tokens=LinearExpressionExtended(0)):
