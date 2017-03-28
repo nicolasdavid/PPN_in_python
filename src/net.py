@@ -203,14 +203,30 @@ class Net:
         exec = True
         while(exec and len(enabled)>0):
             print("chose a transition among %s" %enabled)
-            i = int(input("Fire t_i with i = ? (integer)..."))
+            while True:
+                try:
+                    i = int(input("Fire t_i with i = ? (integer)..."))
+                except ValueError:
+                    print("Sorry, we need an integer here.")
+                    # indice not parsed, redo the loop
+                    continue
+                else:
+                    # indice was successfully parsed, exit loop
+                    break
             past = m
             self.fire(self.transitions[i])
             m = self.marking()
-            print("%s -- t%s --> %s" %(str(past), str(i), str(m)))
-            answer = input("Continue ? (y/n)")
-            if answer.upper()[0] == "N":
-                exec = False
+            print("%s -- t%s --> %s" % (str(past), str(i), str(m)))
+            while True:
+                answer = input("Continue ? (Y/N)")
+                if answer.upper()[0] == "N":
+                    exec = False
+                    break
+                elif answer.upper()[0] == "Y":
+                    exec = True
+                    break
+                else:
+                    continue
 
 
 class NetFromRomeoXML(Net):
