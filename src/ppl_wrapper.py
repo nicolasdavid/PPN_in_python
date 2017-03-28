@@ -21,6 +21,7 @@ class Parameter (ppl.Variable):
 class LinearExpressionExtended:
     """
     Extend Linear Expression with omega.
+    By abuse, we represent omega by a boolean called infinite.
 
     Note:
         To be consistent, each comparison operator returns a ppl.Constraint

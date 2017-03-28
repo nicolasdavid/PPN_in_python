@@ -2,10 +2,9 @@ import ppl
 
 class IntegerExtended:
     """
-    faire 2 class : une étendant les entiers, une étendat les linear expressions
-    Extend Linear Expression with omega.
-    TODO :
-        RETURN CONSTRAINT, NOT BOOLEAN
+    This class is used to represent the classic union of Integer with omega, where omega represent an 
+    arbitrarily large integer. 
+    By abuse, it is called here "infinite".
     """
 
     def __init__(self, value=0, infinite=False):
