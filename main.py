@@ -81,44 +81,11 @@ if os.path.isfile("xml/%s.xml" % fileName):
 else:
     print("Sorry, file xml/%s.xml does not exists" % fileName)
 
-#Test marking
-
-m0 = net.marking()
-print("marking %s" %str(m0))
-
 #Test Matrix
-print(net.compute_post_matrix())
-print(net.compute_pre_matrix())
-
-
-#Test Integer Extended
-a = IntegerExtended()
-print(a)
-b = IntegerExtended(10)
-print(b)
-c = IntegerExtended(value=11)
-print(c)
-d = IntegerExtended(value=1, infinite=True)
-print(d)
-e = IntegerExtended(infinite=True)
-print(e)
-print(a*b)
-print(a*e)
-
-print(b+e)
-print(b-e)
-print(e-b)
-
-t1 = numpy.array([a,b])
-t2 = numpy.array([a,e])
-t3 = t1+t2
-print(t1 < t2)
-
-u = LinearExpressionExtended(value=ppl.Linear_Expression(1), infinite=False)
-v = LinearExpressionExtended(value=ppl.Linear_Expression(3), infinite=True)
-print(u <= v)
-print(v <= u)
-print(v*2)
+print("\n#### TEST PRE POST MATRICES #####")
+print("Pre : %s" %str(net.compute_pre_matrix()))
+print("Post : %s" %str(net.compute_post_matrix()))
 
 #Dynamic Execution
+print("\n#### TEST EXECUTION #####")
 net.execute()
