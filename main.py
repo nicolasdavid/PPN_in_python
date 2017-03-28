@@ -4,9 +4,8 @@ from src.arc import *
 from src.ppl_wrapper import *
 from src.integer_extended import *
 import ppl
-import numpy
-import networkx as nx
-import matplotlib.pyplot as plt
+
+
 
 
 #Construction of a net from scratch
@@ -94,64 +93,13 @@ net.execute()
 
 
 #TEST TREES
-
-#DRAW TREES
-
-import graphviz as gv
-import functools
-graph = functools.partial(gv.Graph, format='png')
-digraph = functools.partial(gv.Digraph, format='png')
-
-def add_nodes(graph, nodes):
-    for n in nodes:
-        if isinstance(n, tuple):
-            graph.node(n[0], **n[1])
-        else:
-            graph.node(n)
-    return graph
-
-def add_edges(graph, edges):
-    for e in edges:
-        if isinstance(e[0], tuple):
-            graph.edge(*e[0], **e[1])
-        else:
-            graph.edge(*e)
-    return graph
-
-add_edges(
-    add_nodes(digraph(), [
-        ('A', {'label': 'Node A'}),
-        ('B', {'label': 'Node B'}),
-        'C'
-    ]),
-    [
-        (('A', 'B'), {'label': 'Edge 1'}),
-        (('A', 'C'), {'label': 'Edge 2'}),
-        ('B', 'C')
-    ]
-).render('img/g5')
-
-#ANALYZE TREES
-try:
-    import pygraphviz
-    from networkx.drawing.nx_agraph import write_dot
-    print("using package pygraphviz")
-except ImportError:
-    try:
-        import pydotplus
-        from networkx.drawing.nx_pydot import write_dot
-        print("using package pydotplus")
-    except ImportError:
-        print()
-        print("Both pygraphviz and pydotplus were not found ")
-        print("see http://networkx.github.io/documentation"
-              "/latest/reference/drawing.html for info")
-        print()
-        raise
-
-G1=nx.DiGraph()
-G1.add_node(0, label=net.marking())
-G1.add_edge("n0","n10",label="t0")
-G1.add_edge("n10","n20",label="t1")
-print(G1.predecessors("n20"))
-write_dot(G1,"test.dot")
+import anytree
+n1 = anytree.Node("root")
+n2 = anytree.Node("leaf1", parent=n1)
+n3 = anytree.Node("leaf2", parent=n1)
+n4 = anytree.Node("leaf3", parent=n2)
+n5 = anytree.Node("leaf4", parent=n4)
+print(anytree.RenderTree(n1))
+print(n4.anchestors.__class__.__name__)
+import anytree.dotexport
+anytree.dotexport.RenderTreeGraph(n1).to_picture("udo.png")
