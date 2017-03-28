@@ -6,6 +6,7 @@ from src.integer_extended import *
 import ppl
 import numpy
 import networkx as nx
+import matplotlib.pyplot as plt
 
 
 #Construction of a net from scratch
@@ -19,6 +20,7 @@ o2 = Arc("o2",LinearExpressionExtended(net.params[1]),net.transitions[1],net.pla
 i3 = Arc("i3",LinearExpressionExtended(1),net.places[2],net.transitions[2])
 o3 = Arc("o3",LinearExpressionExtended(1),net.transitions[2],net.places[1])
 print("net with arcs:\n%s" % net) #TODO ADD THE ARCS ?
+net.initialize_constraint_system()
 
 #Test of str methods for several classes
 print("\n##### DISPLAY METHODS #########")
@@ -90,6 +92,46 @@ print("Post : %s" %str(net.compute_post_matrix()))
 print("\n#### TEST EXECUTION #####")
 net.execute()
 
+
+#TEST TREES
+
+#DRAW TREES
+
+import graphviz as gv
+import functools
+graph = functools.partial(gv.Graph, format='png')
+digraph = functools.partial(gv.Digraph, format='png')
+
+def add_nodes(graph, nodes):
+    for n in nodes:
+        if isinstance(n, tuple):
+            graph.node(n[0], **n[1])
+        else:
+            graph.node(n)
+    return graph
+
+def add_edges(graph, edges):
+    for e in edges:
+        if isinstance(e[0], tuple):
+            graph.edge(*e[0], **e[1])
+        else:
+            graph.edge(*e)
+    return graph
+
+add_edges(
+    add_nodes(digraph(), [
+        ('A', {'label': 'Node A'}),
+        ('B', {'label': 'Node B'}),
+        'C'
+    ]),
+    [
+        (('A', 'B'), {'label': 'Edge 1'}),
+        (('A', 'C'), {'label': 'Edge 2'}),
+        ('B', 'C')
+    ]
+).render('img/g5')
+
+#ANALYZE TREES
 try:
     import pygraphviz
     from networkx.drawing.nx_agraph import write_dot
@@ -107,8 +149,9 @@ except ImportError:
         print()
         raise
 
-G=nx.grid_2d_graph(5,5)  # 5x5 grid
-write_dot(G,"grid.dot")
-print("Now run: neato -Tps grid.dot >grid.ps")
-
-
+G1=nx.DiGraph()
+G1.add_node(0, label=net.marking())
+G1.add_edge("n0","n10",label="t0")
+G1.add_edge("n10","n20",label="t1")
+print(G1.predecessors("n20"))
+write_dot(G1,"test.dot")

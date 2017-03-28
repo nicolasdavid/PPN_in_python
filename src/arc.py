@@ -28,6 +28,14 @@ class Arc:
         assert (self.is_input_arc())
         self.input.consume_tokens(self.weight)
 
+    def get_input_constraint(self):
+        assert (self.is_input_arc())
+        return self.weight >= LinearExpressionExtended(0)
+
+    def get_output_constraint(self):
+        assert (self.is_output_arc())
+        return self.weight >= LinearExpressionExtended(0)
+
     def get_firing_constraint(self):
         assert (self.is_input_arc())
         return self.input.get_tokens() >= self.weight

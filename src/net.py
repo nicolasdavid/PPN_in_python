@@ -139,6 +139,16 @@ class Net:
         for p in self.places:
             self.constraints.insert(p.tokens >= LinearExpressionExtended(0))
 
+    def initialize_constraint_system(self):
+        """
+        Update the constraint system of the net by imposing that each arc is positive.
+        """
+        for t in self.transitions:
+            for arc in t.get_pre():
+                self.constraints.insert(arc.get_input_constraint())
+            for arc in t.get_post():
+                self.constraints.insert(arc.get_output_constraint())
+
     def fire(self, t):
         """
         Fire a transition in the net and update the tokens of the place of the net.
@@ -212,6 +222,7 @@ class Net:
             past = m
             self.fire(self.transitions[i])
             m = self.marking()
+            enabled = self.get_enabled_transitions()
             print("%s -- t%s --> %s" % (str(past), str(i), str(m)))
             while True:
                 answer = input("Continue ? (Y/N)")

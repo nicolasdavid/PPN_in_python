@@ -86,6 +86,18 @@ class Transition(Vertex):
             cs.insert(arc.get_firing_constraint())
         return cs
 
+    def get_input_constraint(self):
+        cs = ppl.Constraint_System()
+        for arc in self.pre:
+            cs.insert(arc.get_input_constraint())
+        return cs
+
+    def get_output_constraint(self):
+        cs = ppl.Constraint_System()
+        for arc in self.post:
+            cs.insert(arc.get_ouput_constraint())
+        return cs
+
     def get_param_present_pre(self, params):
         s = set()
         for arc in self.get_pre():
