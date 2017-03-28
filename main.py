@@ -34,7 +34,7 @@ net.places[0].add_tokens(LinearExpressionExtended(10))
 print(net.display_marking())
 net.fire(net.transitions[0])
 print(net.display_marking())
-#net.fire(net.transitions[1])
+net.fire(net.transitions[1])
 print(net.display_marking())
 
 #Test of the export method, note that the marking is updated in the exported file
@@ -64,7 +64,7 @@ print("\n#### TEST XML IMPORT #####")
 fileName = "train1"
 if os.path.isfile("xml/%s.xml" % fileName):
     train = NetFromRomeoXML(fileName, 0)
-   # train.fire(train.transitions[0])
+    train.fire(train.transitions[0])
     train.export_to_dot()
 else:
     print("Sorry, file xml/%s.xml does not exists" % fileName)
@@ -73,6 +73,10 @@ else:
 
 m0 = net.marking()
 print("marking %s" %str(m0))
+
+#Test Matrix
+print(net.compute_post_matrix())
+print(net.compute_pre_matrix())
 
 
 #Test Integer Extended

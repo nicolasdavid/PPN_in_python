@@ -24,24 +24,31 @@ class Net:
         Evaluate a Parametric Petri Net by replacing its parameters by the values in the list dictionary.
         Val is not mandatory to specify all parameters of the net.
         Notice that this evaluation works fine with linear combination of parameters.
+        TODO : 
+            Detect if the valuation generates negative markings inside the places and thus forbid it if necessary
         """
         assert len(val) <= len(self.params)
         val_comb = [0 for i in range(len(self.params))]
         for i in range(len(self.params)) :
             value = val.get(i,"unassigned")
-            if not(value == "unassigned"):
+            if value != "unassigned":
                 val_comb[i] = ppl.Linear_Expression(value - self.params[i])
         for t in self.transitions:
                 for arc in t.get_pre() :
-                    if(arc.is_parametric()):
+                    if arc.is_parametric():
                         coeff = [arc.weight.value.coefficient(self.params[i]) for i in range(len(self.params))]
                         for i in range(len(self.params)):
                             arc.weight.value = arc.weight.value + coeff[i]*val_comb[i]
                 for arc in t.get_post() :
-                    if (arc.is_parametric()):
+                    if arc.is_parametric():
                         coeff = [arc.weight.value.coefficient(self.params[i]) for i in range(len(self.params))]
                         for i in range(len(self.params)):
                             arc.weight.value = arc.weight.value + coeff[i]*val_comb[i]
+        for p in self.places:
+            if p.is_marking_parameterized():
+                coeff = [p.tokens.value.coefficient(self.params[i]) for i in range(len(self.params))]
+                for i in range(len(self.params)):
+                    p.tokens.value = arc.weight.value + coeff[i] * val_comb[i]
 
     def __str__(self):
         return "PPN %s:\n list of places: %s\n list of transitions: %s\n list of parameters: %s\n list of constraints: %s\n" % (
@@ -171,6 +178,12 @@ class Net:
         file.close()
         command = "dot -Tpng export/%s.dot > export/%s.png" % (name, name)
         os.system(command)
+
+    def compute_pre_matrix(self):
+        return [[t.get_pre_vector(p) for p in self.places] for t in self.transitions]
+
+    def compute_post_matrix(self):
+        return [[t.get_post_vector(p) for p in self.places] for t in self.transitions]
 
 class NetFromRomeoXML(Net):
     """

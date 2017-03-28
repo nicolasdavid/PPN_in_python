@@ -36,6 +36,9 @@ class LinearExpressionExtended:
         else:
             return str(self.value)
 
+    def __repr__(self):
+        return str(self)
+
     def __add__(self, other):
         infinite = self.infinite or other.infinite
         value = self.value + other.value

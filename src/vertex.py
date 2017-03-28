@@ -51,6 +51,13 @@ class Place(Vertex):
     def is_transition(self):
         return False
 
+    def is_marking_parameterized(self):
+        if self.tokens.infinite:
+            return False
+        elif self.tokens.value.all_homogeneous_terms_are_zero():
+            return False
+        else:
+            return True
 
 class Transition(Vertex):
     def is_transition(self):
@@ -88,3 +95,15 @@ class Transition(Vertex):
         for arc in self.get_post():
             s.update(arc.get_param_present(params))
         return s
+
+    def get_pre_vector(self, place):
+        for arc in self.pre:
+            if arc.input == place:
+                return arc.weight
+        return 0
+
+    def get_post_vector(self, place):
+        for arc in self.post:
+            if arc.output == place:
+                return arc.weight
+        return 0
