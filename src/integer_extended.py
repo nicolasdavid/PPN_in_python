@@ -1,33 +1,16 @@
 import ppl
 
-class Parameter (ppl.Variable):
+class IntegerExtended:
     """
-    This class allows to consider sets of Parameter which is not allowed using ppl.Variable
-
-    Example:
-        v = Parameter(0)
-        print(v)
-        print(v.__hash__())
-        expr = ppl.Linear_Expression(v + 2)
-
-        listVars = set()
-        listVars.add(Parameter(0))
-    """
-    def __hash__(self):
-    # Use only one variable per dimension to avoid conflicts
-        return self.id()
-
-
-class LinearExpressionExtended:
-    """
+    faire 2 class : une étendant les entiers, une étendat les linear expressions
     Extend Linear Expression with omega.
-
-    Note:
-        To be consistent, each comparison operator returns a ppl.Constraint
+    TODO :
+        RETURN CONSTRAINT, NOT BOOLEAN
     """
 
     def __init__(self, value=0, infinite=False):
-        self.value = ppl.Linear_Expression(value)
+        assert(type(value) == int), "Not an integer"
+        self.value = value
         self.infinite = infinite
 
     def __str__(self):
@@ -36,13 +19,10 @@ class LinearExpressionExtended:
         else:
             return str(self.value)
 
-    def __repr__(self):
-        return str(self)
-
     def __add__(self, other):
         infinite = self.infinite or other.infinite
         value = self.value + other.value
-        return LinearExpressionExtended(value=value, infinite=infinite)
+        return IntegerExtended(value=value, infinite=infinite)
 
     def __sub__(self, other):
         try:
@@ -53,57 +33,52 @@ class LinearExpressionExtended:
         else:
             infinite = self.infinite
             value = self.value - other.value
-            return LinearExpressionExtended(value=value, infinite=infinite)
+            return IntegerExtended(value=value, infinite=infinite)
 
     def __mul__(self, other):
-        """
-        TODO : check
-        multiply an extended linear expression with a scalar.
-        Exception if the linear expression is equal to omega.
-        """
         try:
-            b = int(other)
-            if self.infinite:
+            if(self.infinite or other.infinite):
                 raise ValueError("one element is equal to %s" %u"\u03C9")
+            a = int(self.value)
+            b = int(other.value)
         except ValueError:
             print("The multiplication cannot be done. (one member may be equal to %s)" %u"\u03C9")
         except TypeError:
-            print("The second member should be a scalar")
+            print("One variable has a type uncompatible with multiplication")
         else:
-            value = self.value * other
-            return LinearExpressionExtended(value=value)
+            value = self.value * other.value
+            return IntegerExtended(value=value)
 
     def __eq__(self, other):
         if self.infinite and other.infinite:
-            return ppl.Linear_Expression(1) >= 0
+            return True
         elif (not self.infinite) and (not other.infinite):
             return self.value == other.value
         else:
-            return ppl.Linear_Expression(-1) >= 0
-        return cs
+            return False
 
     def __le__(self, other):
-        if other.infinite:
-            return ppl.Linear_Expression(1) >= 0
+        if (other.infinite):
+            return True
         else:
-            if self.infinite:
-                return ppl.Linear_Expression(-1) >= 0
+            if (self.infinite):
+                return False
             else:
                 return self.value <= other.value
-        return cs
 
     def __lt__(self, other):
         if self.infinite:
-            return ppl.Linear_Expression(-1) >= 0
+            return False
         elif other.infinite and not self.infinite:
-            return ppl.Linear_Expression(1) >= 0
+            return True
         else:
             return self.value < other.value
-        return cs
 
     def __gt__(self, other):
         return other < self
 
     def __ge__(self, other):
         return other <= self
+
+
 

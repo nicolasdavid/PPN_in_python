@@ -1,6 +1,6 @@
 from src.vertex import *
-from src.ppl_wrapper import *
 from src.arc import *
+from src.ppl_wrapper import *
 
 import ppl
 import os
@@ -24,24 +24,31 @@ class Net:
         Evaluate a Parametric Petri Net by replacing its parameters by the values in the list dictionary.
         Val is not mandatory to specify all parameters of the net.
         Notice that this evaluation works fine with linear combination of parameters.
+        TODO : 
+            Detect if the valuation generates negative markings inside the places and thus forbid it if necessary
         """
         assert len(val) <= len(self.params)
         val_comb = [0 for i in range(len(self.params))]
         for i in range(len(self.params)) :
             value = val.get(i,"unassigned")
-            if not(value == "unassigned"):
+            if value != "unassigned":
                 val_comb[i] = ppl.Linear_Expression(value - self.params[i])
         for t in self.transitions:
-                for arc in t.getPre() :
-                    if(arc.is_parametric()):
-                        coeff = [arc.weight.coefficient(self.params[i]) for i in range(len(self.params))]
-                        for i in range(len(self.params)) :
-                            arc.weight = arc.weight +coeff[i]*val_comb[i]
-                for arc in t.getPost() :
-                    if (arc.is_parametric()):
-                        coeff = [arc.weight.coefficient(self.params[i]) for i in range(len(self.params))]
-                        for i in range(len(self.params)) :
-                            arc.weight = arc.weight +coeff[i]*val_comb[i]
+                for arc in t.get_pre() :
+                    if arc.is_parametric():
+                        coeff = [arc.weight.value.coefficient(self.params[i]) for i in range(len(self.params))]
+                        for i in range(len(self.params)):
+                            arc.weight.value = arc.weight.value + coeff[i]*val_comb[i]
+                for arc in t.get_post() :
+                    if arc.is_parametric():
+                        coeff = [arc.weight.value.coefficient(self.params[i]) for i in range(len(self.params))]
+                        for i in range(len(self.params)):
+                            arc.weight.value = arc.weight.value + coeff[i]*val_comb[i]
+        for p in self.places:
+            if p.is_marking_parameterized():
+                coeff = [p.tokens.value.coefficient(self.params[i]) for i in range(len(self.params))]
+                for i in range(len(self.params)):
+                    p.tokens.value = arc.weight.value + coeff[i] * val_comb[i]
 
     def __str__(self):
         return "PPN %s:\n list of places: %s\n list of transitions: %s\n list of parameters: %s\n list of constraints: %s\n" % (
@@ -62,7 +69,7 @@ class Net:
         return:
             boolean
         """
-        return any(t.isParametricPre() for t in self.transitions) and all(not t.isParametricPost() for t in self.transitions)
+        return any(t.is_parametric_pre() for t in self.transitions) and all(not t.is_parametric_post() for t in self.transitions)
 
     def is_post_parametric(self):
         """
@@ -70,7 +77,7 @@ class Net:
         return:
             boolean
         """
-        return any(t.isParametricPost() for t in self.transitions) and all(not t.isParametricPre() for t in self.transitions)
+        return any(t.is_parametric_post() for t in self.transitions) and all(not t.is_parametric_pre() for t in self.transitions)
 
     def is_distinct_parametric(self):
         """
@@ -85,9 +92,9 @@ class Net:
         setPre = set()
         setPost = set()
         for t in self.transitions :
-            if t.isParametricPre() :
+            if t.is_parametric_pre() :
                 setPre.update(t.get_param_present_pre(self.params))
-            if t.isParametricPost() :
+            if t.is_parametric_post() :
                 setPost.update(t.get_param_present_post(self.params))
         return len(setPre & setPost) == 0 #and len(setPre) != 0 and len(setPost) != 0
 
@@ -113,16 +120,16 @@ class Net:
 
     def marking(self):
         """
-        return a dict describing the current marking of the net.
+        return a list describing the current marking of the net.
         """
-        tokens = {x: x.getTokens() for x in self.places}
+        tokens = [x.get_tokens() for x in self.places]
         return tokens
 
     def display_marking(self):
         """
         return a string describing the current marking of the net.
         """
-        l = map(lambda x: x.getTokens(), self.places)
+        l = map(lambda x: x.get_tokens(), self.places)
         return ",".join(map(str, l))
 
     def update_constraint_system(self):
@@ -130,13 +137,15 @@ class Net:
         Update the constraint system of the net by imposing that the current marking must be positive.
         """
         for p in self.places:
-            self.constraints.insert(p.getTokens() >= 0)
+            self.constraints.insert(p.tokens >= LinearExpressionExtended(0))
 
     def fire(self, t):
         """
         Fire a transition in the net and update the tokens of the place of the net.
         """
         assert self.is_enabled(t)
+        for c in list(t.get_firing_constraint()):
+            self.constraints.insert(c)
         t.fire()
         self.update_constraint_system()
 
@@ -144,10 +153,9 @@ class Net:
         """
         Ask whether a transition can be fired or not.
         """
-        context = self.constraints
-        for c in list(t.getFiringConstraint()):
+        context = ppl.Constraint_System(self.constraints)
+        for c in list(t.get_firing_constraint()):
             context.insert(c)
-        #DO WITH OK()
         poly = ppl.NNC_Polyhedron(context)
         return not poly.is_empty()
 
@@ -172,6 +180,51 @@ class Net:
         command = "dot -Tpng export/%s.dot > export/%s.png" % (name, name)
         os.system(command)
 
+    def compute_pre_matrix(self):
+        return [[t.get_pre_vector(p) for p in self.places] for t in self.transitions]
+
+    def compute_post_matrix(self):
+        return [[t.get_post_vector(p) for p in self.places] for t in self.transitions]
+
+    def get_enabled_transitions(self):
+        return [t for t in self.transitions if self.is_enabled(t)]
+
+    def execute(self):
+        """
+        User interactive execution of the net. 
+        Warning : the initial marking is lost during the execution.
+        """
+        m = self.marking()
+        enabled = self.get_enabled_transitions()
+        exec = True
+        while(exec and len(enabled)>0):
+            print("chose a transition among %s" %enabled)
+            while True:
+                try:
+                    i = int(input("Fire t_i with i = ? (integer)..."))
+                except ValueError:
+                    print("Sorry, we need an integer here.")
+                    # indice not parsed, redo the loop
+                    continue
+                else:
+                    # indice was successfully parsed, exit loop
+                    break
+            past = m
+            self.fire(self.transitions[i])
+            m = self.marking()
+            print("%s -- t%s --> %s" % (str(past), str(i), str(m)))
+            while True:
+                answer = input("Continue ? (Y/N)")
+                if answer.upper()[0] == "N":
+                    exec = False
+                    break
+                elif answer.upper()[0] == "Y":
+                    exec = True
+                    break
+                else:
+                    continue
+
+
 class NetFromRomeoXML(Net):
     """
     Class that describes a Parametric Petri Net constructed from a Romeo Model.
@@ -192,12 +245,12 @@ class NetFromRomeoXML(Net):
         o = 0
         for arc in tree.xpath("/TPN/arc"):
             if arc.get("type") == "TransitionPlace":
-                self.arcs.append(Arc("i%s" % i, ppl.Linear_Expression(int(arc.get("weight"))),
+                self.arcs.append(Arc("i%s" % i, LinearExpressionExtended(int(arc.get("weight"))),
                                 self.transitions[int(arc.get("transition")) - 1],
                                 self.places[int(arc.get("place")) - 1]))
                 i += 1
             elif arc.get("type") == "PlaceTransition":
-                self.arcs.append(Arc("o%s" % o, ppl.Linear_Expression(int(arc.get("weight"))),
+                self.arcs.append(Arc("o%s" % o, LinearExpressionExtended(int(arc.get("weight"))),
                                 self.places[int(arc.get("place")) - 1],
                                 self.transitions[int(arc.get("transition")) - 1]))
                 o += 1
@@ -205,4 +258,5 @@ class NetFromRomeoXML(Net):
                 print("Error")
 
         for p in tree.xpath("/TPN/place"):
-            self.places[int(p.get("id")) - 1].addTokens(ppl.Linear_Expression(int(p.get("initialMarking"))))
+            self.places[int(p.get("id")) - 1].add_tokens(LinearExpressionExtended(int(p.get("initialMarking"))))
+
