@@ -120,6 +120,7 @@ print("Post : %s" %str(net.Post))
 print("m %s" %net.marking())
 net.export_to_dot()
 m = [LinearExpressionExtended(0), LinearExpressionExtended(3), LinearExpressionExtended(1)]
+m2 = [LinearExpressionExtended(0), LinearExpressionExtended(3), LinearExpressionExtended(0)]
 print(net.is_enabled_from_marking(m,net.transitions[0]))
 print(net.is_enabled_from_marking(m,net.transitions[1]))
 print(net.is_enabled_from_marking(m,net.transitions[2]))
@@ -127,5 +128,15 @@ print(net.get_enabled_transitions_from_marking(m))
 print(net.fire_from_marking(m,net.transitions[2]))
 print(m)
 
+net.build_KM_tree(m,100)
+
+print(net.is_greater(m, m2))
+m=net.accelerate(m, m2)
+print(m)
+print(net.get_enabled_transitions_from_marking(m))
+print(net.get_enabled_transitions_from_marking(net.fire_from_marking(m,net.transitions[2])))
+
+
+
 #Test Reachab
-net.build_partial_reach_tree(m,15)
+#net.build_partial_reach_tree(m,15)

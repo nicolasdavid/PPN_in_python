@@ -297,9 +297,72 @@ class Net:
             for t in enabled:
                 wait = wait | {(nodes[i], t)}
             i += 1
-            print(anytree.RenderTree(root))
+        print(anytree.RenderTree(root))
         anytree.dotexport.RenderTreeGraph(root, nodenamefunc=node_label, nodeattrfunc=lambda node: "shape=box",
                                           edgeattrfunc=edge_label).to_picture("export/reachab%s.png" %str(length))
+
+    def is_greater(self, m1, m2):
+        assert len(m1) == len(m2)
+        j = 0
+        geq = True
+        while j<len(m1) and geq:
+            if (m1[j] < m2[j]).is_tautological():  #adapt if use the constraint system
+                geq = False
+            else:
+                j += 1
+        return geq
+
+    def is_equal(self, m1, m2):
+        assert len(m1) == len(m2)
+        j = 0
+        eq = True
+        while j<len(m1) and eq:
+            if (m1[j] == m2[j]).is_tautological():  #adapt if use the constraint system
+                j += 1
+            else:
+                eq = False
+        return eq
+
+    def filter_greater(self,m1,markings):
+        return [m for m in markings if self.is_greater(m1,m)]
+
+    def accelerate(self, m1, m2):
+        assert self.is_greater(m1,m2)
+        m = list(m1)
+        for j in range(len(m1)):
+            if (m1[j] > m2[j]).is_tautological():  #adapt if use the constraint system
+                m[j].infinite = True
+        return m
+
+    def build_KM_tree(self, init_m, length):
+        current_m = init_m
+        root = anytree.Node("n0", m=current_m, input_t=None)
+        enabled = self.get_enabled_transitions_from_marking(current_m)
+        wait=set()
+        nodes=[root]
+        for t in enabled:
+            wait = wait | {(root,t)}
+        i=1
+        while i < length and len(wait) != 0:
+            couple = wait.pop()
+            current_m = self.fire_from_marking(couple[0].m,couple[1])
+            predecessors = [x.m for x in couple[0].anchestors]
+            predecessors.append(couple[0].m)
+            if any(self.is_equal(current_m,m) for m in predecessors):
+                nodes.append(anytree.Node("n%s" % i, parent=couple[0], m=current_m, input_t=couple[1]))
+                i += 1
+            else:
+                predecessors = self.filter_greater(current_m,predecessors)
+                for m in predecessors:
+                    current_m = self.accelerate(current_m,m)
+                nodes.append(anytree.Node("n%s" % i,parent=couple[0], m=current_m, input_t=couple[1]))
+                enabled = self.get_enabled_transitions_from_marking(current_m)
+                for t in enabled:
+                    wait = wait | {(nodes[i], t)}
+                i += 1
+        print(anytree.RenderTree(root))
+        anytree.dotexport.RenderTreeGraph(root, nodenamefunc=node_label, nodeattrfunc=lambda node: "shape=box",
+                                          edgeattrfunc=edge_label).to_picture("export/KM%s.png" %str(length))
 
 
 class NetFromRomeoXML(Net):
