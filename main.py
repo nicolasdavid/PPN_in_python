@@ -94,12 +94,19 @@ net.execute()
 
 #TEST TREES
 import anytree
-n1 = anytree.Node("root")
-n2 = anytree.Node("leaf1", parent=n1)
-n3 = anytree.Node("leaf2", parent=n1)
-n4 = anytree.Node("leaf3", parent=n2)
-n5 = anytree.Node("leaf4", parent=n4)
+n1 = anytree.Node("root", m=net.marking(), t=None)
+n2 = anytree.Node("leaf1", parent=n1, m=net.marking(),t=net.transitions[0])
+n3 = anytree.Node("leaf2", parent=n1, m=net.marking(),t=net.transitions[1])
+n4 = anytree.Node("leaf3", parent=n2, m=net.marking(),t=net.transitions[2])
+n5 = anytree.Node("leaf4", parent=n4, m=net.marking(),t=net.transitions[0])
 print(anytree.RenderTree(n1))
 print(n4.anchestors.__class__.__name__)
 import anytree.dotexport
-anytree.dotexport.RenderTreeGraph(n1).to_picture("udo.png")
+
+def nodenamefunc(node):
+    return '%s:%s' % (node.name, node.m)
+
+def edgeattrfunc(node, child):
+    return 'label="%s"' % (child.t)
+
+anytree.dotexport.RenderTreeGraph(n1,nodenamefunc=nodenamefunc,nodeattrfunc=lambda node: "shape=box",edgeattrfunc=edgeattrfunc).to_picture("udo.png")
