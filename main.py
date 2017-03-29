@@ -20,6 +20,8 @@ i3 = Arc("i3",LinearExpressionExtended(1),net.places[2],net.transitions[2])
 o3 = Arc("o3",LinearExpressionExtended(1),net.transitions[2],net.places[1])
 print("net with arcs:\n%s" % net) #TODO ADD THE ARCS ?
 net.initialize_constraint_system()
+net.compute_pre_matrix()
+net.compute_post_matrix()
 
 #Test of str methods for several classes
 print("\n##### DISPLAY METHODS #########")
@@ -57,9 +59,6 @@ print("ARCS: \n Is input of t1 param ? %s\n is output of t1 param ?%s" %(i1.is_p
 print("TRANSITION t1:\n Is t1 pre Param ? %s\nIs t1 Post Param ? %s\n Is t1 Param ? %s" % (net.transitions[0].is_parametric_pre(), net.transitions[0].is_parametric_post(), net.transitions[0].is_parametric()))
 print("TRANSITION t3:\n Is t3 pre Param ? %s\nIs t3 Post Param ? %s\n Is t3 Param ? %s" % (net.transitions[2].is_parametric_pre(), net.transitions[2].is_parametric_post(), net.transitions[2].is_parametric()))
 
-#Test evaluation of a net
-#net.evaluate({1: 5})
-
 #Test get params of an arc
 i1.get_param_present(net.params)
 
@@ -84,16 +83,18 @@ else:
 
 #Test Matrix
 print("\n#### TEST PRE POST MATRICES #####")
-print("Pre : %s" %str(net.compute_pre_matrix()))
-print("Post : %s" %str(net.compute_post_matrix()))
+print("Pre : %s" %str(net.Pre))
+print("Post : %s" %str(net.Post))
 
 #Dynamic Execution
 print("\n#### TEST EXECUTION #####")
-net.execute()
+#net.execute()
 
 
 #TEST TREES
 import anytree
+m0=net.marking()
+enabled = net.get_enabled_transitions()
 n1 = anytree.Node("root", m=net.marking(), t=None)
 n2 = anytree.Node("leaf1", parent=n1, m=net.marking(),t=net.transitions[0])
 n3 = anytree.Node("leaf2", parent=n1, m=net.marking(),t=net.transitions[1])
@@ -110,3 +111,21 @@ def edgeattrfunc(node, child):
     return 'label="%s"' % (child.t)
 
 anytree.dotexport.RenderTreeGraph(n1,nodenamefunc=nodenamefunc,nodeattrfunc=lambda node: "shape=box",edgeattrfunc=edgeattrfunc).to_picture("udo.png")
+
+#Test evaluation of a net
+print("\n#### TEST PRE EVALUATION #####")
+net.evaluate({0: 1, 1: 2})
+print("Pre : %s" %str(net.Pre))
+print("Post : %s" %str(net.Post))
+print("m %s" %net.marking())
+net.export_to_dot()
+m = [LinearExpressionExtended(0), LinearExpressionExtended(3), LinearExpressionExtended(1)]
+print(net.is_enabled_from_marking(m,net.transitions[0]))
+print(net.is_enabled_from_marking(m,net.transitions[1]))
+print(net.is_enabled_from_marking(m,net.transitions[2]))
+print(net.get_enabled_transitions_from_marking(m))
+print(net.fire_from_marking(m,net.transitions[2]))
+print(m)
+
+#Test Reachab
+net.build_partial_reach_tree(m,15)

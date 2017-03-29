@@ -114,10 +114,10 @@ class Transition(Vertex):
         for arc in self.pre:
             if arc.input == place:
                 return arc.weight
-        return 0
+        return LinearExpressionExtended(0)
 
     def get_post_vector(self, place):
         for arc in self.post:
             if arc.output == place:
                 return arc.weight
-        return 0
+        return LinearExpressionExtended(0)

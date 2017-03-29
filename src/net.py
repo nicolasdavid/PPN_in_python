@@ -6,6 +6,15 @@ import ppl
 import os
 from lxml import etree
 
+import anytree
+import anytree.dotexport
+
+def node_label(node):
+    return '%s:%s' % (node.name, node.m)
+
+def edge_label(node, child):
+    return 'label="%s"' % (child.input_t)
+
 class Net:
     """
     Class that describes a Parametric Petri Net.
@@ -18,6 +27,31 @@ class Net:
         self.constraints = ppl.Constraint_System()
         for param in self.params:
             self.constraints.insert(param >= 0)
+        self.Pre = []   # need to be updated once arcs are created
+        self.Post = []  # need to be updated once arcs are created
+
+    def compute_pre_matrix(self):
+        self.Pre = [[t.get_pre_vector(p) for p in self.places] for t in self.transitions]
+
+    def compute_post_matrix(self):
+        self.Post = [[t.get_post_vector(p) for p in self.places] for t in self.transitions]
+
+    def initialize_constraint_system(self):
+        """
+        Update the constraint system of the net by imposing that each arc is positive.
+        """
+        for t in self.transitions:
+            for arc in t.get_pre():
+                self.constraints.insert(arc.get_input_constraint())
+            for arc in t.get_post():
+                self.constraints.insert(arc.get_output_constraint())
+
+    def update_constraint_system(self):
+        """
+        Update the constraint system of the net by imposing that the current marking must be positive.
+        """
+        for p in self.places:
+            self.constraints.insert(p.tokens >= LinearExpressionExtended(0))
 
     def evaluate(self, val):
         """
@@ -26,6 +60,7 @@ class Net:
         Notice that this evaluation works fine with linear combination of parameters.
         TODO : 
             Detect if the valuation generates negative markings inside the places and thus forbid it if necessary
+            Use self.constraints to this end
         """
         assert len(val) <= len(self.params)
         val_comb = [0 for i in range(len(self.params))]
@@ -48,12 +83,55 @@ class Net:
             if p.is_marking_parameterized():
                 coeff = [p.tokens.value.coefficient(self.params[i]) for i in range(len(self.params))]
                 for i in range(len(self.params)):
-                    p.tokens.value = arc.weight.value + coeff[i] * val_comb[i]
+                    p.tokens.value = p.tokens.value + coeff[i] * val_comb[i]
+        self.compute_post_matrix()
+        self.compute_pre_matrix()
+
+    def export_to_dot(self):
+        """
+        Generate a dot file description of the Petri Net.
+        """
+        name = "exported_net_%s" % (self.id)
+        file = open("export/" + name + ".dot", "w")
+        file.write("digraph {\n")
+        for t in self.transitions:
+            for arc in t.pre:
+                file.write("%s -> %s[label=\"%s\"]\n" % (arc.input.id, arc.output.id, str(arc.weight)))
+            for arc in t.post:
+                file.write("%s -> %s[label=\"%s\"]\n" % (arc.input.id, arc.output.id, str(arc.weight)))
+        for p in self.places:
+            file.write("%s[label=\"%s\"]\n" % (p.id, str(p.tokens)))
+        for t in self.transitions:
+            file.write("%s[shape=box,color=lightblue2,label=\"%s\"]\n" % (t.id, t.id))
+        file.write("}")
+        file.close()
+        command = "dot -Tpng export/%s.dot > export/%s.png" % (name, name)
+        os.system(command)
 
     def __str__(self):
         return "PPN %s:\n list of places: %s\n list of transitions: %s\n list of parameters: %s\n list of constraints: %s\n" % (
         self.id, ", ".join(map(str, self.places)), ", ".join(map(str, self.transitions)),
         ", ".join(map(str, self.params)), " && ".join(map(str, list(self.constraints))))
+
+    def get_type_of_net(self):
+        """
+        Get the syntactical class of a PPN among :
+            T-PPN  <-- distinctT-PPN <-- {preT-PPN} OR  {postT-PPN <--(P-PPN)} <--  PN
+        Note that a parametric initial marking (P-PPN) can be easily translated into a postT-PPN.
+        We therefore do not test this subclass.
+        return:
+            string
+        """
+        if not self.is_parametric():
+            return "Petri Net"
+        elif self.is_pre_parametric():
+            return "preT-PPN"
+        elif self.is_post_parametric():
+            return "postT-PPN"
+        elif self.is_distinct_parametric():
+            return "distinctT-PPN"
+        else:
+            return "T-PPN"
 
     def is_parametric(self):
         """
@@ -98,26 +176,6 @@ class Net:
                 setPost.update(t.get_param_present_post(self.params))
         return len(setPre & setPost) == 0 #and len(setPre) != 0 and len(setPost) != 0
 
-    def get_type_of_net(self):
-        """
-        Get the syntactical class of a PPN among :
-            T-PPN  <-- distinctT-PPN <-- {preT-PPN} OR  {postT-PPN <--(P-PPN)} <--  PN
-        Note that a parametric initial marking (P-PPN) can be easily translated into a postT-PPN.
-        We therefore do not test this subclass.
-        return:
-            string
-        """
-        if not self.is_parametric():
-            return "Petri Net"
-        elif self.is_pre_parametric():
-            return "preT-PPN"
-        elif self.is_post_parametric():
-            return "postT-PPN"
-        elif self.is_distinct_parametric():
-            return "distinctT-PPN"
-        else:
-            return "T-PPN"
-
     def marking(self):
         """
         return a list describing the current marking of the net.
@@ -131,23 +189,6 @@ class Net:
         """
         l = map(lambda x: x.get_tokens(), self.places)
         return ",".join(map(str, l))
-
-    def update_constraint_system(self):
-        """
-        Update the constraint system of the net by imposing that the current marking must be positive.
-        """
-        for p in self.places:
-            self.constraints.insert(p.tokens >= LinearExpressionExtended(0))
-
-    def initialize_constraint_system(self):
-        """
-        Update the constraint system of the net by imposing that each arc is positive.
-        """
-        for t in self.transitions:
-            for arc in t.get_pre():
-                self.constraints.insert(arc.get_input_constraint())
-            for arc in t.get_post():
-                self.constraints.insert(arc.get_output_constraint())
 
     def fire(self, t):
         """
@@ -168,33 +209,6 @@ class Net:
             context.insert(c)
         poly = ppl.NNC_Polyhedron(context)
         return not poly.is_empty()
-
-    def export_to_dot(self):
-        """
-        Generate a dot file description of the Petri Net.
-        """
-        name = "exported_net_%s" % (self.id)
-        file = open( "export/" + name + ".dot", "w")
-        file.write("digraph {\n")
-        for t in self.transitions:
-            for arc in t.pre:
-                file.write("%s -> %s[label=\"%s\"]\n" % (arc.input.id, arc.output.id, str(arc.weight)))
-            for arc in t.post:
-                file.write("%s -> %s[label=\"%s\"]\n" % (arc.input.id, arc.output.id, str(arc.weight)))
-        for p in self.places:
-            file.write("%s[label=\"%s\"]\n" % (p.id, str(p.tokens)))
-        for t in self.transitions:
-            file.write("%s[shape=box,color=lightblue2,label=\"%s\"]\n" % (t.id, t.id))
-        file.write("}")
-        file.close()
-        command = "dot -Tpng export/%s.dot > export/%s.png" % (name, name)
-        os.system(command)
-
-    def compute_pre_matrix(self):
-        return [[t.get_pre_vector(p) for p in self.places] for t in self.transitions]
-
-    def compute_post_matrix(self):
-        return [[t.get_post_vector(p) for p in self.places] for t in self.transitions]
 
     def get_enabled_transitions(self):
         return [t for t in self.transitions if self.is_enabled(t)]
@@ -234,6 +248,58 @@ class Net:
                     break
                 else:
                     continue
+
+
+#TODO IMPROVE THOSE FUNCTION BY PROVIDING A CLASS STATE:
+                #  with a marking and a constraint system
+                #  allowing the comparison of markings
+    def is_enabled_from_marking(self, m, t):
+        """
+        Ask whether a transition can be fired or not from a marking m.
+        should implement comparison of markings by creating a class marking.
+        """
+        assert not self.is_parametric()
+        i = self.transitions.index(t)
+        m[0] >= self.Pre[i][0]
+        poly = ppl.NNC_Polyhedron(len(self.params))
+        for j in range(len(m)):
+            poly.add_constraint(m[j] >= self.Pre[i][j])
+        return not poly.is_empty()
+
+
+    def get_enabled_transitions_from_marking(self, m):
+        assert not self.is_parametric()
+        return [t for t in self.transitions if self.is_enabled_from_marking(m, t)]
+
+    def fire_from_marking(self, m, t):
+        assert not self.is_parametric()
+        assert self.is_enabled_from_marking(m, t)
+        i = self.transitions.index(t)
+        futur_m=list(m)
+        for j in range(len(m)):
+            futur_m[j] = m[j] - self.Pre[i][j] + self.Post[i][j]
+        return futur_m
+
+    def build_partial_reach_tree(self, init_m, length):
+        current_m = init_m
+        root = anytree.Node("n0", m=current_m, input_t=None)
+        enabled = self.get_enabled_transitions_from_marking(current_m)
+        wait=set()
+        nodes=[root]
+        for t in enabled:
+            wait = wait | {(root,t)}
+        i=1
+        while i<length and len(wait) != 0:
+            couple = wait.pop()
+            current_m = self.fire_from_marking(couple[0].m,couple[1])
+            nodes.append(anytree.Node("n%s" % i,parent=couple[0], m=current_m, input_t=couple[1]))
+            enabled = self.get_enabled_transitions_from_marking(current_m)
+            for t in enabled:
+                wait = wait | {(nodes[i], t)}
+            i += 1
+            print(anytree.RenderTree(root))
+        anytree.dotexport.RenderTreeGraph(root, nodenamefunc=node_label, nodeattrfunc=lambda node: "shape=box",
+                                          edgeattrfunc=edge_label).to_picture("export/reachab%s.png" %str(length))
 
 
 class NetFromRomeoXML(Net):
