@@ -90,28 +90,6 @@ print("Post : %s" %str(net.Post))
 print("\n#### TEST EXECUTION #####")
 #net.execute()
 
-
-#TEST TREES
-import anytree
-m0=net.marking()
-enabled = net.get_enabled_transitions()
-n1 = anytree.Node("root", m=net.marking(), t=None)
-n2 = anytree.Node("leaf1", parent=n1, m=net.marking(),t=net.transitions[0])
-n3 = anytree.Node("leaf2", parent=n1, m=net.marking(),t=net.transitions[1])
-n4 = anytree.Node("leaf3", parent=n2, m=net.marking(),t=net.transitions[2])
-n5 = anytree.Node("leaf4", parent=n4, m=net.marking(),t=net.transitions[0])
-print(anytree.RenderTree(n1))
-print(n4.anchestors.__class__.__name__)
-import anytree.dotexport
-
-def nodenamefunc(node):
-    return '%s:%s' % (node.name, node.m)
-
-def edgeattrfunc(node, child):
-    return 'label="%s"' % (child.t)
-
-anytree.dotexport.RenderTreeGraph(n1,nodenamefunc=nodenamefunc,nodeattrfunc=lambda node: "shape=box",edgeattrfunc=edgeattrfunc).to_picture("udo.png")
-
 #Test evaluation of a net
 print("\n#### TEST PRE EVALUATION #####")
 net.evaluate({0: 1, 1: 2})
@@ -128,15 +106,8 @@ print(net.get_enabled_transitions_from_marking(m))
 print(net.fire_from_marking(m,net.transitions[2]))
 print(m)
 
+#TEST KM Tree
 net.build_KM_tree(m,100)
-
-print(net.is_greater(m, m2))
-m=net.accelerate(m, m2)
-print(m)
-print(net.get_enabled_transitions_from_marking(m))
-print(net.get_enabled_transitions_from_marking(net.fire_from_marking(m,net.transitions[2])))
-
-
 
 #Test Reachab
 #net.build_partial_reach_tree(m,15)
