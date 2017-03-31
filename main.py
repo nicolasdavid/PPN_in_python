@@ -122,3 +122,8 @@ s1 = State("s1",net,net.marking(),net.constraints)
 print(str(s1))
 s2 = State("s2",net)
 print(str(s2))
+
+print( s1 == s2 )
+print(s1.get_enabled_transitions())
+s1.fire(net.transitions[0])
+print(s1)
