@@ -4,13 +4,11 @@ from src.ppl_wrapper import *
 import ppl
 
 
-
 class State:
-
     def __init__(self, id, net, marking=None, constraints=None):
         self.id = id
         self.net = net
-        if marking==None:
+        if marking == None:
             self.marking = net.marking()[:]
         else:
             self.marking = marking[:]
@@ -20,7 +18,8 @@ class State:
             self.poly = ppl.NNC_Polyhedron(constraints)
 
     def __str__(self):
-        return "State %s:\nm=%s\nsatisfying: %s" %(str(self.id), str(self.marking),str(self.poly.minimized_constraints()))
+        return "State %s:\nm=%s\nsatisfying: %s" % (
+        str(self.id), str(self.marking), str(self.poly.minimized_constraints()))
 
     def __eq__(self, other):
         """
@@ -28,7 +27,7 @@ class State:
         Thus, self.poly is necessarily included in other.poly.
         Nevertheless, we need to ensure that self.marking == other.marking for every valuation stafisfying self.poly.
         """
-        #TODO assert same net ?
+        # TODO assert same net ?
         poly_copy = ppl.NNC_Polyhedron(self.poly)
         for j in range(len(self.marking)):
             poly_copy.add_constraint(self.marking[j] == other.marking[j])
@@ -40,7 +39,7 @@ class State:
         Thus, self.poly is necessarily included in other.poly.
         Nevertheless, we need to ensure that self.marking > other.marking for every valuation stafifying self.poly.
         """
-        #TODO assert same net ?
+        # TODO assert same net ?
         poly_copy = ppl.NNC_Polyhedron(self.poly)
         for j in range(len(self.marking)):
             poly_copy.add_constraint(self.marking[j] >= other.marking[j])
@@ -52,8 +51,8 @@ class State:
         Thus, self.poly is necessarily included in other.poly.
         Nevertheless, we need to ensure that self.marking > other.marking for every valuation stafifying self.poly.
         """
-        #TODO assert same net ?
-        return self>=other and not self == other
+        # TODO assert same net ?
+        return self >= other and not self == other
 
     def is_enabled(self, t):
         """
@@ -76,3 +75,13 @@ class State:
             self.poly.add_constraint(self.marking[j] >= self.net.Pre[i][j])
             self.marking[j] = self.marking[j] - self.net.Pre[i][j] + self.net.Post[i][j]
             self.poly.add_constraint(self.marking[j] >= LinearExpressionExtended(0))
+
+    def filter_greater(self, markings):
+        return [m for m in markings if self >= m]
+
+    def accelerate(self, other):
+        # TODO SPLIT
+        assert self >= other
+        for j in range(len(self.marking)):
+            if (self.marking[j] > other.marking[j]).is_tautological():  # WORK IF NO PARAM...
+                self.marking[j].infinite = True
