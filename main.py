@@ -5,6 +5,7 @@ from src.ppl_wrapper import *
 from src.integer_extended import *
 import ppl
 
+from src.state import *
 
 
 
@@ -92,6 +93,10 @@ print("\n#### TEST EXECUTION #####")
 
 #Test evaluation of a net
 print("\n#### TEST PRE EVALUATION #####")
+print(net.constraints)
+print("First test:")
+net.evaluate({0: 0, 1: 0})
+print("Second Test:")
 net.evaluate({0: 1, 1: 2})
 print("Pre : %s" %str(net.Pre))
 print("Post : %s" %str(net.Post))
@@ -111,3 +116,9 @@ net.build_KM_tree(m,100)
 
 #Test Reachab
 #net.build_partial_reach_tree(m,15)
+
+#Test State
+s1 = State("s1",net,net.marking(),net.constraints)
+print(str(s1))
+s2 = State("s2",net)
+print(str(s2))

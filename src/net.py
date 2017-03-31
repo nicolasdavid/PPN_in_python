@@ -29,6 +29,9 @@ class Net:
             self.constraints.insert(param >= 0)
         self.Pre = []   # need to be updated once arcs are created
         self.Post = []  # need to be updated once arcs are created
+        poly = ppl.NNC_Polyhedron(self.constraints)
+        print("POYHEDRON = %s" % str(poly))
+
 
     def compute_pre_matrix(self):
         self.Pre = [[t.get_pre_vector(p) for p in self.places] for t in self.transitions]
@@ -63,29 +66,38 @@ class Net:
             Use self.constraints to this end
         """
         assert len(val) <= len(self.params)
-        val_comb = [0 for i in range(len(self.params))]
-        for i in range(len(self.params)) :
-            value = val.get(i,"unassigned")
-            if value != "unassigned":
-                val_comb[i] = ppl.Linear_Expression(value - self.params[i])
-        for t in self.transitions:
-                for arc in t.get_pre() :
-                    if arc.is_parametric():
-                        coeff = [arc.weight.value.coefficient(self.params[i]) for i in range(len(self.params))]
-                        for i in range(len(self.params)):
-                            arc.weight.value = arc.weight.value + coeff[i]*val_comb[i]
-                for arc in t.get_post() :
-                    if arc.is_parametric():
-                        coeff = [arc.weight.value.coefficient(self.params[i]) for i in range(len(self.params))]
-                        for i in range(len(self.params)):
-                            arc.weight.value = arc.weight.value + coeff[i]*val_comb[i]
-        for p in self.places:
-            if p.is_marking_parameterized():
-                coeff = [p.tokens.value.coefficient(self.params[i]) for i in range(len(self.params))]
-                for i in range(len(self.params)):
-                    p.tokens.value = p.tokens.value + coeff[i] * val_comb[i]
-        self.compute_post_matrix()
-        self.compute_pre_matrix()
+        poly = ppl.NNC_Polyhedron(self.constraints)
+        for key, value in val.items():
+            poly.add_constraint(self.params[key] == value)
+        print(poly.minimized_constraints())
+        if poly.is_empty():
+            print("This valuation cannot match the constraint system.")
+        else:
+            self.constraints=poly.minimized_constraints()
+            self.constraints = poly.minimized_constraints()
+            val_comb = [0 for i in range(len(self.params))]
+            for i in range(len(self.params)) :
+                value = val.get(i,"unassigned")
+                if value != "unassigned":
+                    val_comb[i] = ppl.Linear_Expression(value - self.params[i])
+            for t in self.transitions:
+                    for arc in t.get_pre() :
+                        if arc.is_parametric():
+                            coeff = [arc.weight.value.coefficient(self.params[i]) for i in range(len(self.params))]
+                            for i in range(len(self.params)):
+                                arc.weight.value = arc.weight.value + coeff[i]*val_comb[i]
+                    for arc in t.get_post() :
+                        if arc.is_parametric():
+                            coeff = [arc.weight.value.coefficient(self.params[i]) for i in range(len(self.params))]
+                            for i in range(len(self.params)):
+                                arc.weight.value = arc.weight.value + coeff[i]*val_comb[i]
+            for p in self.places:
+                if p.is_marking_parameterized():
+                    coeff = [p.tokens.value.coefficient(self.params[i]) for i in range(len(self.params))]
+                    for i in range(len(self.params)):
+                        p.tokens.value = p.tokens.value + coeff[i] * val_comb[i]
+            self.compute_post_matrix()
+            self.compute_pre_matrix()
 
     def export_to_dot(self):
         """
